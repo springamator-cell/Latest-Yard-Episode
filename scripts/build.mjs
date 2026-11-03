@@ -8,7 +8,8 @@ import path from 'node:path';
 
 const OUT = 'dist';
 const BASE_URL = (process.env.BASE_URL || '').replace(/\/$/, '');
-const CHANNEL_PATHS = ['@TheYard', 'c/TheYard', 'TheYard'];
+const CHANNEL_PATHS = ['@TheYardPodcast', '@theyard', '@TheYardYT', '@TheYardShow'];
+const CHANNEL_NAME = 'The Yard';
 const EPISODES = 10;
 const CACHE_SECONDS = 1800;
 const ITEM_ID = 'yard-latest';
@@ -55,17 +56,30 @@ function findChannelId(html) {
   return null;
 }
 
+async function channelAt(p) {
+  const html = await get(`https://www.youtube.com/${p}`, 2);
+  const id = findChannelId(html);
+  const name = metaTag(html, 'property', 'og:title');
+  if (!id) return null;
+  return { id, name, avatar: metaTag(html, 'property', 'og:image'), url: `https://www.youtube.com/${p}` };
+}
+
 async function findChannel() {
+  if (process.env.CHANNEL_ID) return channelAt(`channel/${process.env.CHANNEL_ID}`);
   for (const p of CHANNEL_PATHS) {
     try {
-      const html = await get(`https://www.youtube.com/${p}`, 2);
-      const id = findChannelId(html);
-      if (id) {
-        return { id, name: metaTag(html, 'property', 'og:title'), avatar: metaTag(html, 'property', 'og:image'), url: `https://www.youtube.com/${p}` };
-      }
+      const c = await channelAt(p);
+      console.log(`  ${p}: ${c ? `${c.name} (${c.id})` : 'no channel'}`);
+      if (c && c.name === CHANNEL_NAME) return c;
     } catch (e) {
       console.log(`  ${p}: ${e.message}`);
     }
+  }
+  // Fall back to YouTube's channel search for a channel named exactly "The Yard".
+  const html = await get('https://www.youtube.com/results?search_query=the+yard+podcast&sp=EgIQAg%253D%253D');
+  for (const m of html.matchAll(/"channelRenderer":\{"channelId":"(UC[\w-]{22})","title":\{"simpleText":"((?:[^"\\]|\\.)*)"/g)) {
+    console.log(`  search: ${jsonString(m[2])} (${m[1]})`);
+    if (jsonString(m[2]) === CHANNEL_NAME) return channelAt(`channel/${m[1]}`);
   }
   throw new Error("couldn't find The Yard's YouTube channel");
 }
