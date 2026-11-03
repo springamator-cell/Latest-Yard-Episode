@@ -8,7 +8,7 @@ import path from 'node:path';
 
 const OUT = 'dist';
 const BASE_URL = (process.env.BASE_URL || '').replace(/\/$/, '');
-const CHANNEL_PATHS = ['@TheYardPodcast', '@theyard', '@TheYardYT', '@TheYardShow'];
+const CHANNEL_PATHS = ['@TheYardPodcast'];
 const CHANNEL_NAME = 'The Yard';
 const EPISODES = 10;
 const CACHE_SECONDS = 1800;
@@ -109,7 +109,20 @@ async function fromVideosTab(channelUrl) {
     out.push({ id, title: jsonString(title || 'Episode'), published: null });
   };
   for (const m of html.matchAll(/"videoRenderer":\{"videoId":"([\w-]{11})"[\s\S]{0,4000}?"title":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/g)) add(m[1], m[2]);
-  for (const m of html.matchAll(/"lockupViewModel":\{"contentImage"[\s\S]{0,3000}?"contentId":"([\w-]{11})"[\s\S]{0,3000}?"title":\{"content":"((?:[^"\\]|\\.)*)"/g)) add(m[1], m[2]);
+
+  // Newer layout: each video is a {"lockupViewModel":{...}} entry with a contentId and a
+  // metadata title. Read each entry on its own so fields can come in any order.
+  const marker = '{"lockupViewModel":{';
+  const starts = [];
+  for (let i = html.indexOf(marker); i >= 0; i = html.indexOf(marker, i + 1)) starts.push(i);
+  starts.forEach((s, n) => {
+    const entry = html.slice(s, starts[n + 1] ?? s + 20000);
+    if (/LOCKUP_CONTENT_TYPE_SHORT|"shorts/i.test(entry)) return;
+    const id = (entry.match(/"contentId":"([\w-]{11})"/) || [])[1];
+    const title = (entry.match(/"lockupMetadataViewModel":\{"title":\{"content":"((?:[^"\\]|\\.)*)"/) ||
+      entry.match(/"title":\{"content":"((?:[^"\\]|\\.)*)"/) || [])[1];
+    add(id, title);
+  });
   return out;
 }
 
