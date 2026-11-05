@@ -1,10 +1,10 @@
-# Latest Yard Episode — a Stremio addon
+# Latest Ludwig Videos — a Stremio addon
 
-Adds a **The Yard** row to Stremio with one tile that always plays the newest episode of
-The Yard from its official YouTube channel. Earlier episodes are listed under it.
+Adds a **Ludwig** row to Stremio with one tile that always plays Ludwig's newest video from his
+official YouTube channel (@ludwig). The nine videos before it are listed under it.
 
 Every hour, GitHub checks the channel's uploads (Shorts are skipped) and republishes the
-addon on GitHub Pages. Nothing is re-hosted; episodes play through Stremio's YouTube support.
+addon on GitHub Pages. Nothing is re-hosted; videos play through Stremio's YouTube support.
 
 ## Install
 
