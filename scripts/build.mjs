@@ -1,5 +1,5 @@
-// Builds the "Latest Ludwig Videos" Stremio addon as static files in dist/.
-// It finds Ludwig's official YouTube channel, takes its newest full videos
+// Builds the "Latest Ludwin Videos" Stremio addon as static files in dist/.
+// It finds the Ludwin YouTube channel, takes its newest full videos
 // (Shorts are skipped) and publishes them so Stremio plays them through YouTube.
 // GitHub Actions runs this every hour and hosts dist/ on GitHub Pages.
 
@@ -8,8 +8,8 @@ import path from 'node:path';
 
 const OUT = 'dist';
 const BASE_URL = (process.env.BASE_URL || '').replace(/\/$/, '');
-const CHANNEL_PATHS = ['@ludwig'];
-const CHANNEL_NAME = 'ludwig';
+const CHANNEL_PATHS = ['channel/UCz6XquIbM5OcfK7r3hQQCXA', '@ludwin'];
+const CHANNEL_NAME = 'ludwin';
 const EPISODES = 10;
 const CACHE_SECONDS = 1800;
 const ITEM_ID = 'yard-latest';
@@ -75,13 +75,13 @@ async function findChannel() {
       console.log(`  ${p}: ${e.message}`);
     }
   }
-  // Fall back to YouTube's channel search for a channel named exactly "ludwig".
-  const html = await get('https://www.youtube.com/results?search_query=ludwig&sp=EgIQAg%253D%253D');
+  // Fall back to YouTube's channel search for a channel named exactly "Ludwin".
+  const html = await get('https://www.youtube.com/results?search_query=ludwin&sp=EgIQAg%253D%253D');
   for (const m of html.matchAll(/"channelRenderer":\{"channelId":"(UC[\w-]{22})","title":\{"simpleText":"((?:[^"\\]|\\.)*)"/g)) {
     console.log(`  search: ${jsonString(m[2])} (${m[1]})`);
     if (jsonString(m[2]).toLowerCase() === CHANNEL_NAME) return channelAt(`channel/${m[1]}`);
   }
-  throw new Error("couldn't find Ludwig's YouTube channel");
+  throw new Error("couldn't find Ludwin's YouTube channel");
 }
 
 // Official RSS feed of the channel's uploads. Shorts are linked as /shorts/ and skipped.
@@ -170,7 +170,7 @@ if (!episodes.length) {
 
 let streams = episodes.slice(0, EPISODES).map((v, i) => ({
   ytId: v.id,
-  name: i === 0 ? '▶ Latest' : 'Ludwig',
+  name: i === 0 ? '▶ Latest' : 'Ludwin',
   title: v.published ? `${v.title}\n${shortDate(v.published)}` : v.title
 }));
 if (!streams.length) {
@@ -179,7 +179,7 @@ if (!streams.length) {
 }
 if (!streams.length) throw new Error('no episodes found; keeping the previous version online');
 
-streams.push({ externalUrl: `${channel.url}/videos`, name: 'YouTube', title: 'Open Ludwig on YouTube' });
+streams.push({ externalUrl: `${channel.url}/videos`, name: 'YouTube', title: 'Open Ludwin on YouTube' });
 
 const latest = streams[0];
 const latestTitle = latest.title.split('\n')[0];
@@ -189,7 +189,7 @@ const thumb = `https://i.ytimg.com/vi/${latest.ytId}/hqdefault.jpg`;
 const meta = {
   id: ITEM_ID,
   type: 'tv',
-  name: 'Ludwig — Latest Video',
+  name: 'Ludwin — Latest Video',
   poster: thumb,
   posterShape: 'landscape',
   background: `https://i.ytimg.com/vi/${latest.ytId}/maxresdefault.jpg`,
@@ -200,14 +200,14 @@ const meta = {
 
 await write('manifest.json', {
   id: 'community.springamator.latestyard',
-  version: '1.1.0',
-  name: 'Latest Ludwig Videos',
-  description: 'Plays the newest video from Ludwig\'s official YouTube channel.',
+  version: '1.2.0',
+  name: 'Latest Ludwin Videos',
+  description: 'Plays the newest video from the Ludwin YouTube channel.',
   logo: channel.avatar || undefined,
   resources: ['catalog', 'meta', 'stream'],
   types: ['tv'],
   idPrefixes: ['yard-'],
-  catalogs: [{ type: 'tv', id: 'the-yard', name: 'Ludwig' }],
+  catalogs: [{ type: 'tv', id: 'the-yard', name: 'Ludwin' }],
   behaviorHints: { configurable: false, configurationRequired: false }
 });
 await write('catalog/tv/the-yard.json', { metas: [meta], cacheMaxAge: CACHE_SECONDS });
@@ -218,7 +218,7 @@ const manifestUrl = `${BASE_URL}/manifest.json`;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 await write('index.html', `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Latest Ludwig Videos</title>
+<title>Latest Ludwin Videos</title>
 <style>
 :root{color-scheme:light dark;--bg:#0f1011;--fg:#f1f1f1;--mut:#a3a3a3;--acc:#f4c430;--card:#1b1c1e}
 @media (prefers-color-scheme: light){:root{--bg:#f7f6f2;--fg:#151515;--mut:#5f5f5f;--card:#fff;--acc:#b8860b}}
@@ -231,8 +231,8 @@ a.btn{display:block;text-align:center;background:var(--acc);color:#000;padding:1
 code{display:block;margin:12px 0;padding:12px;border-radius:10px;background:var(--card);word-break:break-all;font-size:13px}
 small{color:var(--mut)}
 </style></head><body><main>
-<h1>Latest Ludwig Videos</h1>
-<p>A Stremio addon that always has Ludwig's newest video.</p>
+<h1>Latest Ludwin Videos</h1>
+<p>A Stremio addon that always has Ludwin's newest video.</p>
 <div class="ep"><img src="${esc(thumb)}" alt=""><strong>${esc(latestTitle)}</strong></div>
 <a class="btn" href="${esc(manifestUrl.replace(/^https?:\/\//, 'stremio://'))}">Install in Stremio</a>
 <code>${esc(manifestUrl)}</code>

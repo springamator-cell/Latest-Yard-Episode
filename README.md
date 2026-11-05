@@ -1,7 +1,7 @@
-# Latest Ludwig Videos — a Stremio addon
+# Latest Ludwin Videos — a Stremio addon
 
-Adds a **Ludwig** row to Stremio with one tile that always plays Ludwig's newest video from his
-official YouTube channel (@ludwig). The nine videos before it are listed under it.
+Adds a **Ludwin** row to Stremio with one tile that always plays the newest video from Ludwig's secondary
+channel, Ludwin. The nine videos before it are listed under it.
 
 Every hour, GitHub checks the channel's uploads (Shorts are skipped) and republishes the
 addon on GitHub Pages. Nothing is re-hosted; videos play through Stremio's YouTube support.
